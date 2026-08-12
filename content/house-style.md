@@ -26,3 +26,10 @@ Numbers / tickers / symbols: 100,000U, BTC/U, 1.91% — never touch.
 - Amount format: `100,000 $U` — no leading "$" before the number when the ticker follows.
 - Compound modifiers hyphenated: on-chain, cross-border, near-real-time.
 - American English spelling throughout.
+
+## Voice conventions (from brand system)
+- Headlines: Title Case. Eyebrows: UPPERCASE (gold-muted or moss green).
+- Short declarative sentences; lists of three.
+- No emoji, ever.
+- Tagline "United Layer of Money" — the last word ("Money") is always gold.
+- Substitute Lucide icons (1.5–2px stroke) for any missing UI icon, and flag it. No flat icon set otherwise.
