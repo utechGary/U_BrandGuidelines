@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import tokens from "../content/tokens.json";
 import logos from "../content/logos.json";
+import fonts from "../content/fonts.json";
 
 // ----- content loading -------------------------------------------------------
 // tokens.json is imported (bundled automatically). Markdown is read from disk;
@@ -42,6 +43,16 @@ const resolvedLogos = {
       return [k, out];
     })
   ) as Record<string, { role: string; url?: string; blackUrl?: string; whiteUrl?: string }>,
+};
+
+// ----- font asset URLs -------------------------------------------------------
+const fontUrl = (file: string) => `${BASE}/fonts/${file}`;
+const resolvedFonts = {
+  family: fonts.family,
+  role: fonts.role,
+  license: fonts.license,
+  note: fonts.note,
+  weights: fonts.weights.map((w) => ({ ...w, url: fontUrl(w.file) })),
 };
 
 // ----- house-style checker (heuristic, mirrors house-style.md) ---------------
@@ -126,6 +137,11 @@ export const handler = createMcpHandler(
       { title: "U Logo Colorways & Imagery", description: "Logo colorway URLs, usage, and never-recolour rule", mimeType: "application/json" },
       async (uri) => ({ contents: [{ uri: uri.href, text: JSON.stringify(resolvedLogos, null, 2) }] })
     );
+    server.registerResource(
+      "fonts", "brand://fonts",
+      { title: "U Fonts (General Sans)", description: "Font family, license, and download URLs per weight", mimeType: "application/json" },
+      async (uri) => ({ contents: [{ uri: uri.href, text: JSON.stringify(resolvedFonts, null, 2) }] })
+    );
 
     // Prompt — the one-tap entry point for non-technical teammates
     server.registerPrompt(
@@ -189,6 +205,25 @@ export const handler = createMcpHandler(
         const entries = variant ? [[variant, resolvedLogos.variants[variant]] as const] : Object.entries(resolvedLogos.variants);
         const out = Object.fromEntries(entries.map(([k, v]) => [k, pick(v)]));
         return { content: [{ type: "text", text: JSON.stringify({ usage: resolvedLogos.usage, selectByBackground: resolvedLogos.selectByBackground, variants: out }, null, 2) }] };
+      }
+    );
+    server.registerTool(
+      "get_font",
+      {
+        title: "Get Font",
+        description: "Return General Sans (document face) download URLs + license. Optionally filter by weight/style.",
+        inputSchema: z.object({
+          weight: z.enum(["extralight", "light", "regular", "medium", "semibold", "bold"]).optional(),
+          style: z.enum(["normal", "italic"]).optional(),
+        }),
+        annotations: { readOnlyHint: true },
+      },
+      async ({ weight, style }) => {
+        const weightMap: Record<string, number> = { extralight: 200, light: 300, regular: 400, medium: 500, semibold: 600, bold: 700 };
+        let list = resolvedFonts.weights;
+        if (weight) list = list.filter((w) => w.weight === weightMap[weight]);
+        if (style) list = list.filter((w) => w.style === style);
+        return { content: [{ type: "text", text: JSON.stringify({ family: resolvedFonts.family, role: resolvedFonts.role, license: resolvedFonts.license, note: resolvedFonts.note, weights: list }, null, 2) }] };
       }
     );
     server.registerTool(
