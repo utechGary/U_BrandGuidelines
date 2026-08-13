@@ -1,0 +1,10 @@
+{
+  "usage": "Choose colour by background: WHITE version on dark backgrounds, BLACK version on light backgrounds. Primary is the main logo; Stacked is auxiliary (rarely used). Logomark is the standalone U mark; Token is the $U coin appearance (full colour, use as-is). Never recolour.",
+  "selectByBackground": { "dark": "white", "light": "black" },
+  "variants": {
+    "primary":  { "role": "Main logo — default choice",        "black": "U_Primary_Black.svg", "white": "U_Primary_White.svg" },
+    "stacked":  { "role": "Auxiliary lockup — rarely used",     "black": "U_Stacked_Black.svg", "white": "U_Stacked_White.svg" },
+    "logomark": { "role": "Standalone U mark",                  "file": "U_Logomark.svg" },
+    "token":    { "role": "$U token / coin appearance (full colour)", "file": "U_Token.svg" }
+  }
+}
