@@ -1,0 +1,22 @@
+{
+  "family": "General Sans",
+  "role": "Document face — body copy, decks, documents (pairs with Neue Haas Grotesk Display Pro for headlines)",
+  "foundry": "Indian Type Foundry / Fontshare",
+  "license": "Fontshare free license — free for personal and commercial use. Source: https://www.fontshare.com/fonts/general-sans",
+  "format": "otf",
+  "note": "OTF files are for installing on machines so PowerPoint / Word render the brand font. This MCP is the authoritative source + download point; it does NOT auto-embed fonts into generated files.",
+  "weights": [
+    { "name": "Extralight",        "weight": 200, "style": "normal", "file": "GeneralSans-Extralight.otf" },
+    { "name": "Extralight Italic", "weight": 200, "style": "italic", "file": "GeneralSans-ExtralightItalic.otf" },
+    { "name": "Light",             "weight": 300, "style": "normal", "file": "GeneralSans-Light.otf" },
+    { "name": "Light Italic",      "weight": 300, "style": "italic", "file": "GeneralSans-LightItalic.otf" },
+    { "name": "Regular",           "weight": 400, "style": "normal", "file": "GeneralSans-Regular.otf" },
+    { "name": "Italic",            "weight": 400, "style": "italic", "file": "GeneralSans-Italic.otf" },
+    { "name": "Medium",            "weight": 500, "style": "normal", "file": "GeneralSans-Medium.otf" },
+    { "name": "Medium Italic",     "weight": 500, "style": "italic", "file": "GeneralSans-MediumItalic.otf" },
+    { "name": "Semibold",          "weight": 600, "style": "normal", "file": "GeneralSans-Semibold.otf" },
+    { "name": "Semibold Italic",   "weight": 600, "style": "italic", "file": "GeneralSans-SemiboldItalic.otf" },
+    { "name": "Bold",              "weight": 700, "style": "normal", "file": "GeneralSans-Bold.otf" },
+    { "name": "Bold Italic",       "weight": 700, "style": "italic", "file": "GeneralSans-BoldItalic.otf" }
+  ]
+}
