@@ -30,6 +30,11 @@ const BASE =
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : "https://u-brand-guidelines.vercel.app");
 const logoUrl = (file: string) => `${BASE}/logos/${file}`;
+// Inline the SVG source so Claude gets the bytes directly (no external fetch / egress needed).
+const readSvg = (file?: string): string | undefined => {
+  if (!file || !file.endsWith(".svg")) return undefined;
+  try { return readFileSync(join(process.cwd(), "public/logos", file), "utf8"); } catch { return undefined; }
+};
 type LogoVariant = { role: string; file?: string; black?: string; white?: string };
 const resolvedLogos = {
   usage: logos.usage,
@@ -166,7 +171,7 @@ export const handler = createMcpHandler(
                 `2. Copy: SELECT / FILTER / ARRANGE the source — do not creatively rewrite unless asked.\n` +
                 `3. Titles → Title Case, no trailing punctuation. Body → sentence case. Preserve brand names exactly. Amount format \`100,000 $U\`.\n` +
                 `4. Apply visual tokens; keep positioning as unified liquidity layer / infrastructure (not a coin). AI-Ready sections take the dark treatment.\n` +
-                `5. LOGO IS REQUIRED — never omit it. Call get_logo with the background (light or dark) and place the Primary lockup in the header/cover: WHITE on dark, BLACK on light. Embed the returned URL directly — HTML: <img src="<url>" alt="United Stables" />; deck: insert the image. Use Logomark when only the mark fits; Token for the coin visual.\n` +
+                `5. LOGO IS REQUIRED — never omit it. Call get_logo with a variant and the background (light or dark): WHITE on dark, BLACK on light. The response includes the inline SVG source — embed that directly (paste the <svg> inline into HTML, or write it to a file for a deck) so nothing needs to be fetched. Fall back to the url only if needed. Use Primary as the default lockup; Logomark when only the mark fits; Token for the coin visual.\n` +
                 `6. For a deck, use your pptx skill to produce a real file. For HTML, reference logo/asset URLs from the MCP (do not leave a blank logo slot). State image backgrounds explicitly (cream-white).`,
             },
           },
@@ -189,7 +194,7 @@ export const handler = createMcpHandler(
       "get_logo",
       {
         title: "Get Logo",
-        description: "Return U logo URLs + usage rules. Optionally pick a variant and/or a background to get the recommended file.",
+        description: "Return U logo URLs + usage rules. Pass a variant (and background) to ALSO get the inline SVG source, which you can embed directly with zero external fetch — paste it inline into HTML, or write it to a file for a deck.",
         inputSchema: z.object({
           variant: z.enum(["primary", "stacked", "logomark", "token"]).optional(),
           background: z.enum(["light", "dark"]).optional(),
@@ -197,13 +202,21 @@ export const handler = createMcpHandler(
         annotations: { readOnlyHint: true },
       },
       async ({ variant, background }) => {
-        const pick = (v: { role: string; url?: string; blackUrl?: string; whiteUrl?: string }) => {
-          if (v.url) return { role: v.role, url: v.url }; // single-file (logomark, token)
-          if (background) return { role: v.role, recommended: background === "dark" ? v.whiteUrl : v.blackUrl, blackUrl: v.blackUrl, whiteUrl: v.whiteUrl };
-          return { role: v.role, blackUrl: v.blackUrl, whiteUrl: v.whiteUrl };
+        const rawVariants = logos.variants as Record<string, LogoVariant>;
+        const inline = !!variant; // only inline SVG when a specific variant is asked for (keeps responses lean)
+        const buildEntry = (k: string) => {
+          const raw = rawVariants[k];
+          const res = resolvedLogos.variants[k];
+          if (raw.file) return { role: res.role, url: res.url, ...(inline ? { svg: readSvg(raw.file) } : {}) }; // single-file (logomark, token)
+          if (background) {
+            const file = background === "dark" ? raw.white : raw.black;
+            const url = background === "dark" ? res.whiteUrl : res.blackUrl;
+            return { role: res.role, recommended: background === "dark" ? "white" : "black", url, ...(inline ? { svg: readSvg(file) } : {}), blackUrl: res.blackUrl, whiteUrl: res.whiteUrl };
+          }
+          return { role: res.role, blackUrl: res.blackUrl, whiteUrl: res.whiteUrl, ...(inline ? { blackSvg: readSvg(raw.black), whiteSvg: readSvg(raw.white) } : {}) };
         };
-        const entries = variant ? [[variant, resolvedLogos.variants[variant]] as const] : Object.entries(resolvedLogos.variants);
-        const out = Object.fromEntries(entries.map(([k, v]) => [k, pick(v)]));
+        const keys = variant ? [variant] : Object.keys(rawVariants);
+        const out = Object.fromEntries(keys.map((k) => [k, buildEntry(k)]));
         return { content: [{ type: "text", text: JSON.stringify({ usage: resolvedLogos.usage, selectByBackground: resolvedLogos.selectByBackground, variants: out }, null, 2) }] };
       }
     );
