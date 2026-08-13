@@ -162,12 +162,12 @@ export const handler = createMcpHandler(
               text:
                 `Restyle the attached document into United Stables ($U) brand as a ${output_type}.\n\n` +
                 `Steps:\n` +
-                `1. Read resources brand://voice, brand://house-style, brand://tokens, and brand://template/${output_type === "deck" ? "deck" : "guideline"}.\n` +
+                `1. Read resources brand://voice, brand://house-style, brand://tokens, brand://logos, brand://fonts, and brand://template/${output_type === "deck" ? "deck" : "guideline"}.\n` +
                 `2. Copy: SELECT / FILTER / ARRANGE the source — do not creatively rewrite unless asked.\n` +
                 `3. Titles → Title Case, no trailing punctuation. Body → sentence case. Preserve brand names exactly. Amount format \`100,000 $U\`.\n` +
                 `4. Apply visual tokens; keep positioning as unified liquidity layer / infrastructure (not a coin). AI-Ready sections take the dark treatment.\n` +
-                `5. Logos: before placing any logo, call get_logo with the slide/section background (light or dark) and use the recommended file — WHITE on dark, BLACK on light. Primary is the default lockup; Token for the coin visual.\n` +
-                `6. For a deck, use your pptx skill to produce a real file; state image backgrounds explicitly (cream-white).`,
+                `5. LOGO IS REQUIRED — never omit it. Call get_logo with the background (light or dark) and place the Primary lockup in the header/cover: WHITE on dark, BLACK on light. Embed the returned URL directly — HTML: <img src="<url>" alt="United Stables" />; deck: insert the image. Use Logomark when only the mark fits; Token for the coin visual.\n` +
+                `6. For a deck, use your pptx skill to produce a real file. For HTML, reference logo/asset URLs from the MCP (do not leave a blank logo slot). State image backgrounds explicitly (cream-white).`,
             },
           },
         ],
