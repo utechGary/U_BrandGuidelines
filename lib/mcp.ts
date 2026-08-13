@@ -3,6 +3,7 @@ import { z } from "zod";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import tokens from "../content/tokens.json";
+import logos from "../content/logos.json";
 
 // ----- content loading -------------------------------------------------------
 // tokens.json is imported (bundled automatically). Markdown is read from disk;
@@ -16,6 +17,31 @@ const voice = read("voice.md");
 const templates: Record<string, string> = {
   guideline: read("templates/guideline.md"),
   deck: read("templates/deck.md"),
+};
+
+// ----- logo asset URLs -------------------------------------------------------
+// Logo files live in /public/logos and are served by Vercel at <BASE>/logos/*.
+// BASE auto-resolves to the production domain; override with PUBLIC_BASE_URL
+// when you move to a custom domain.
+const BASE =
+  process.env.PUBLIC_BASE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "https://u-brand-guidelines.vercel.app");
+const logoUrl = (file: string) => `${BASE}/logos/${file}`;
+type LogoVariant = { role: string; file?: string; black?: string; white?: string };
+const resolvedLogos = {
+  usage: logos.usage,
+  selectByBackground: logos.selectByBackground,
+  variants: Object.fromEntries(
+    Object.entries(logos.variants as Record<string, LogoVariant>).map(([k, v]) => {
+      const out: Record<string, string> = { role: v.role };
+      if (v.file) out.url = logoUrl(v.file);
+      if (v.black) out.blackUrl = logoUrl(v.black);
+      if (v.white) out.whiteUrl = logoUrl(v.white);
+      return [k, out];
+    })
+  ) as Record<string, { role: string; url?: string; blackUrl?: string; whiteUrl?: string }>,
 };
 
 // ----- house-style checker (heuristic, mirrors house-style.md) ---------------
@@ -95,6 +121,11 @@ export const handler = createMcpHandler(
       { title: "Template — On-brand deck (pptx)", mimeType: "text/markdown" },
       async (uri) => ({ contents: [{ uri: uri.href, text: templates.deck }] })
     );
+    server.registerResource(
+      "logos", "brand://logos",
+      { title: "U Logo Colorways & Imagery", description: "Logo colorway URLs, usage, and never-recolour rule", mimeType: "application/json" },
+      async (uri) => ({ contents: [{ uri: uri.href, text: JSON.stringify(resolvedLogos, null, 2) }] })
+    );
 
     // Prompt — the one-tap entry point for non-technical teammates
     server.registerPrompt(
@@ -136,6 +167,28 @@ export const handler = createMcpHandler(
       "get_template",
       { title: "Get Template", description: "Return a brand template spec", inputSchema: z.object({ type: z.enum(["guideline", "deck"]) }), annotations: { readOnlyHint: true } },
       async ({ type }) => ({ content: [{ type: "text", text: templates[type] }] })
+    );
+    server.registerTool(
+      "get_logo",
+      {
+        title: "Get Logo",
+        description: "Return U logo URLs + usage rules. Optionally pick a variant and/or a background to get the recommended file.",
+        inputSchema: z.object({
+          variant: z.enum(["primary", "stacked", "logomark", "token"]).optional(),
+          background: z.enum(["light", "dark"]).optional(),
+        }),
+        annotations: { readOnlyHint: true },
+      },
+      async ({ variant, background }) => {
+        const pick = (v: { role: string; url?: string; blackUrl?: string; whiteUrl?: string }) => {
+          if (v.url) return { role: v.role, url: v.url }; // single-file (logomark, token)
+          if (background) return { role: v.role, recommended: background === "dark" ? v.whiteUrl : v.blackUrl, blackUrl: v.blackUrl, whiteUrl: v.whiteUrl };
+          return { role: v.role, blackUrl: v.blackUrl, whiteUrl: v.whiteUrl };
+        };
+        const entries = variant ? [[variant, resolvedLogos.variants[variant]] as const] : Object.entries(resolvedLogos.variants);
+        const out = Object.fromEntries(entries.map(([k, v]) => [k, pick(v)]));
+        return { content: [{ type: "text", text: JSON.stringify({ usage: resolvedLogos.usage, selectByBackground: resolvedLogos.selectByBackground, variants: out }, null, 2) }] };
+      }
     );
     server.registerTool(
       "check_house_style",
