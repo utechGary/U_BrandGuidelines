@@ -3,7 +3,7 @@
 Use when turning a document into a "U brand guideline"-styled deliverable.
 
 Structure:
-1. Cover — 3D U mark (half champagne gold, half silver), tagline "United Layer of Money" (last word gold), Title Case, no trailing punctuation.
+1. Cover — REQUIRED: place the Primary logo via get_logo (WHITE on dark, BLACK on light). In HTML embed it as `<img src="<url from get_logo>" alt="United Stables" />`; never leave a blank logo slot. Then the 3D U mark, tagline "United Layer of Money" (last word gold), Title Case, no trailing punctuation.
 2. Positioning — unified liquidity layer / infrastructure framing (see voice.md).
 3. Colour — show priority tiers: Primary (Universal Black #000000, Fluid Silver #AEAEB2, Cosmic Alloy #A18B2F, Trustable White #FFFFFF) → Secondary (greens/yellow/grays) → Purple (use least). Label tokens.
 4. Typography — Neue Haas Grotesk Display Pro (brand face) + General Sans (document face); show scale + eyebrow spec.
