@@ -149,8 +149,9 @@ export const handler = createMcpHandler(
                 `1. Read resources brand://voice, brand://house-style, brand://tokens, and brand://template/${output_type === "deck" ? "deck" : "guideline"}.\n` +
                 `2. Copy: SELECT / FILTER / ARRANGE the source — do not creatively rewrite unless asked.\n` +
                 `3. Titles → Title Case, no trailing punctuation. Body → sentence case. Preserve brand names exactly. Amount format \`100,000 $U\`.\n` +
-                `4. Apply visual tokens; keep positioning as settlement layer / infrastructure (not a coin). AI-Ready sections take the dark treatment.\n` +
-                `5. For a deck, use your pptx skill to produce a real file; state image backgrounds explicitly (cream-white).`,
+                `4. Apply visual tokens; keep positioning as unified liquidity layer / infrastructure (not a coin). AI-Ready sections take the dark treatment.\n` +
+                `5. Logos: before placing any logo, call get_logo with the slide/section background (light or dark) and use the recommended file — WHITE on dark, BLACK on light. Primary is the default lockup; Token for the coin visual.\n` +
+                `6. For a deck, use your pptx skill to produce a real file; state image backgrounds explicitly (cream-white).`,
             },
           },
         ],
